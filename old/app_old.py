@@ -10,9 +10,9 @@ from dotenv import load_dotenv
 
 import chainlit as cl
 
-from utils import get_final_assessment, extract_letters
+from src.utils import get_final_assessment, extract_letters
 
-from GrammarChecker import GrammarChecker
+from src.GrammarChecker import GrammarChecker
 
 
 os.environ["HTTP_PROXY"] = "http://127.0.0.1:5035"

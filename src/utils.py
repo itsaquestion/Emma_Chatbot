@@ -7,7 +7,7 @@ def extract_letters(string):
     return "".join(letters)
 
 
-def get_final_assessment(text):
+def get_final_assessment(text) -> str:
     """
     从多行字符串中提取Final Assessment的结果。
 
@@ -17,10 +17,11 @@ def get_final_assessment(text):
     返回:
     str - "Yes"或"No"
     """
-    pattern = r"Final Assessment: (Yes|No)"
-    match = re.search(pattern, text)
-    if match:
-        return match.group(1)
-    else:
-        return None
+    
+    result = text.split(":")
+    
+    if len(result) > 0:
+        result = result[-1].strip()
+
+    return result
 
