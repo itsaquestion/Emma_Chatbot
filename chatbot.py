@@ -2,7 +2,10 @@ import os
 from prompt_poet import Prompt
 from langchain_openai import ChatOpenAI
 import sys
-import yaml
+from prompt_toolkit import PromptSession, print_formatted_text
+from prompt_toolkit.styles import Style
+from prompt_toolkit.formatted_text import HTML
+
 # Define the raw template
 
 raw_template = """
@@ -63,11 +66,13 @@ username = "Alex"
 ai_name = "Emma"
 
 # Initialize the model
-model = ChatOpenAI(model="gpt-4o-mini",
-                   temperature=0.9,
-                   api_key=os.environ["TABBY_API_KEY"],
-                   base_url=os.environ["TABBY_BASE_URL"],
-                   streaming=True)
+model = ChatOpenAI(
+    model="gpt-4o-mini",
+    temperature=0.9,
+    api_key=os.environ["TABBY_API_KEY"],
+    base_url=os.environ["TABBY_BASE_URL"],
+    streaming=True,
+)
 
 
 # Function to handle streaming output
@@ -78,76 +83,77 @@ def stream_output(chunk):
         sys.stdout.flush()
     return content
 
-def sanitize_for_yaml(content):
-    # 移除可能导致 YAML 解析错误的字符
-    content = content.replace('\t', '  ')  # 将制表符替换为空格
-    
-    # 对每一行进行处理
-    lines = content.split('\n')
-    sanitized_lines = []
-    for line in lines:
-        # 如果行以 '-' 开头，在前面添加一个空格
-        if line.strip().startswith('-'):
-            line = ' ' + line
-        sanitized_lines.append(line)
-    
-    # 重新组合内容
-    sanitized_content = '\n'.join(sanitized_lines)
-    
-    # 使用 yaml.safe_dump 来确保内容是安全的 YAML 格式
-    return yaml.safe_dump(sanitized_content, default_style='|', allow_unicode=True).strip()
 
-# Main chat loop
+style = Style.from_dict(
+    {
+        "username": "#ansigreen bold",
+        "ai-name": "#ansiblue bold",
+        "user-input": "#ansiblue",
+    }
+)
+
+session = PromptSession()
+
+
+def get_formatted_message(sender, message):
+    if sender == username:
+        return HTML(f"<username>{sender}</username>: {message}")
+    else:
+        return HTML(f"<ai-name>{sender}</ai-name>: {message}")
+
+
+def print_message(sender, message):
+    if sender == username:
+        print_formatted_text(
+            HTML(f"<username>{sender}</username>: {message}"), style=style
+        )
+    else:
+        print_formatted_text(
+            HTML(f"<ai-name>{sender}</ai-name>: {message}"), style=style, end=""
+        )
+
+
 while True:
     # Get user input
-    user_query = input(f"{username}: ")
-    
+    user_query = session.prompt(HTML(f"<username>{username}</username>: "), style=style)
+
     if user_query.lower() == "exit":
         print("Exiting chat...")
         break
-    
+
     # Prepare template data
     template_data = {
         "username": username,
         "ai_name": ai_name,
         "user_query": user_query,
-        "chat_history": chat_history
+        "chat_history": chat_history,
     }
-    
+
     # Create the prompt
-    prompt = Prompt(
-        raw_template=raw_template,
-        template_data=template_data
-    )
-    
-    # Get the response from the model
-    # response = model.invoke(prompt.messages)
-    # ai_response = response.content.strip()
-    
-    # Get the response from the model with streaming
-    
-    
-    # print(prompt.messages)
-    
-    print(f"{ai_name}: ", end="", flush=True)
-    
+    prompt = Prompt(raw_template=raw_template, template_data=template_data)
+
+    # Print AI name before streaming response
+    print_message(ai_name, "")
+
     full_response = ""
     for chunk in model.stream(prompt.messages):
         content = stream_output(chunk)
         if content is not None:
             full_response += content
-    
-    print()
+            # print(content, end='', flush=True)
+
+    print()  # New line after full response
     # Print AI's response
     # print(f"{ai_name}: {full_response}")
-    
+
     # full_response = sanitize_for_yaml(full_response)
-    
-    full_response = full_response.replace('\n','').replace(f"{{ ai_name }}:",'').strip()
+
+    full_response = (
+        full_response.replace("\n", "").replace(f"{{ ai_name }}:", "").strip()
+    )
     # Update chat history
     chat_history.append({"role": "user", "content": f"{username}: {user_query}"})
     chat_history.append({"role": "assistant", "content": f"{ai_name}: {full_response}"})
-    
 
     # Limit chat history to last 10 messages to prevent context overflow
     chat_history = chat_history[-10:]
