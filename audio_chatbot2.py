@@ -1,22 +1,11 @@
-# %%
-from operator import itemgetter
-import textwrap
 from prompt_poet import Prompt
 
 from langchain_openai import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.schema.output_parser import StrOutputParser
-from langchain.schema.runnable import Runnable, RunnablePassthrough, RunnableLambda
-from langchain.schema.runnable.config import RunnableConfig
-from langchain.memory import ConversationBufferMemory
-import edge_tts
-from chainlit.types import ThreadDict
+
 import chainlit as cl
 
-from src.utils import get_final_assessment, extract_letters
+import tts
 
-
-import os
 
 model = ChatOpenAI(
     # base_url=os.environ.get("CHAT_BASE_URL"),
@@ -32,20 +21,6 @@ model = ChatOpenAI(
 @cl.on_chat_start
 async def on_chat_start():
     pass
-
-
-VOICE = "zh-CN-XiaoxiaoNeural"
-
-# VOICE = "en-US-AriaNeural"
-
-
-async def ms_tts_stream(text):
-    communicate = edge_tts.Communicate(text, VOICE)
-    audio_data = b""
-    async for chunk in communicate.stream():
-        if chunk["type"] == "audio":
-            audio_data += chunk["data"]
-    return audio_data
 
 
 system_prompt_template = """
@@ -86,23 +61,7 @@ raw_template = (
     Respond directly without prefixing with "{{ ai_name }}:". Begin your response immediately with the content. Don not use markdown. No quote marks. response as human {{ai_name}}:"""
 )
 
-import aiohttp
-import io
 
-async def gpt_sovits_tts_stream(text, text_language="zh", base_url="http://127.0.0.1:9880"):
-    params = {
-        "text": text,
-        "text_language": text_language
-    }
-    
-    async with aiohttp.ClientSession() as session:
-        async with session.get(base_url, params=params) as response:
-            if response.status == 200:
-                audio_data = await response.read()
-                return audio_data  # 直接返回 bytes
-            else:
-                raise Exception(f"Error: Received status code {response.status}")
-            
 @cl.on_message
 async def on_message(message: cl.Message):
     # ======================================
@@ -136,17 +95,19 @@ async def on_message(message: cl.Message):
         content = chunk.content
 
         if content is not None:
-            #if content == "\n":
+            # if content == "\n":
             #    continue
             await res.stream_token(content)
             full_response += content
             # print(content, end='', flush=True)
 
-    full_response_clean = full_response.replace('\n','')
-    message_clean = message.content.replace('\n', '')
-    
+    full_response_clean = full_response.replace("\n", "")
+    message_clean = message.content.replace("\n", "")
+
     chat_history.append({"role": "user", "content": f"{username}: {message_clean}"})
-    chat_history.append({"role": "assistant", "content": f"{ai_name}: {full_response_clean}"})
+    chat_history.append(
+        {"role": "assistant", "content": f"{ai_name}: {full_response_clean}"}
+    )
 
     cl.user_session.set("chat_history", chat_history)
 
@@ -155,15 +116,15 @@ async def on_message(message: cl.Message):
     # ======================================
     # TTS
     # ======================================
-    
-    full_response.replace('嘿', '嘿！ ').replace('嗯','嗯... ')
-    
+
+    full_response.replace("嘿", "Hey！ ").replace('嗨','嗨！ ').replace("嗯", "嗯... ")
+
     # 使用edge-tts
-    # audio_data = await ms_tts_stream(full_response)
+    # audio_data = await tts.ms_tts_stream(full_response)
 
     # 使用gpt-sovits
-    audio_data = await gpt_sovits_tts_stream(full_response)
-    
+    audio_data = await tts.gpt_sovits_tts_stream(full_response)
+
     # 添加音频控件并自动播放语音
     output_audio_el = cl.Audio(
         name="",
