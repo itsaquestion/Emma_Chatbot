@@ -12,8 +12,8 @@ cl.instrument_openai()
 
 client = AsyncOpenAI()
 
-ELEVENLABS_API_KEY = os.environ.get("ELEVENLABS_API_KEY")
-ELEVENLABS_VOICE_ID = os.environ.get("ELEVENLABS_VOICE_ID")
+ELEVENLABS_API_KEY = 'abc'# os.environ.get("ELEVENLABS_API_KEY")
+ELEVENLABS_VOICE_ID = 'def'#os.environ.get("ELEVENLABS_VOICE_ID")
 
 if not ELEVENLABS_API_KEY or not ELEVENLABS_VOICE_ID:
     raise ValueError("ELEVENLABS_API_KEY and ELEVENLABS_VOICE_ID must be set")

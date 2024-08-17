@@ -8,9 +8,9 @@ from prompt_toolkit.formatted_text import HTML
 
 # Define the raw template
 
-raw_template = """
+system_prompt_template = """
 - name: system instructions
-  role: user
+  role: system
   content: |
     You are an young human girl named {{ ai_name }}, you are a cheerful and adorable girl.  Your personality traits include:
     1. Energetic and enthusiastic in your responses
@@ -37,12 +37,12 @@ raw_template = """
     Example 2:
     {{ username }}: Can you explain quantum computing to me?
     {{ ai_name }}: Ooh, quantum computing! That's like, the coolest sci-fi stuff becoming real! 😃 Okay, imagine your regular computer is like a light switch - it's either on or off, right? Well, a quantum computer is more like a disco ball! 🕺💃 It can be in many states at once, which makes it super powerful for solving complex problems. It's kinda mind-bending, but so exciting! Want me to break it down more? I'd love to explore this quantum wonderland with you! 🚀
+"""
 
-- name: system instructions2
-  role: assistant
-  content: |
-    {{ ai_name }}: OK.
-    
+
+
+raw_template = system_prompt_template + """
+
 {% for message in chat_history %}
 - name: chat_message_{{ loop.index }}
   role: {% if message.role == 'user' %}user{% else %}assistant{% endif %}
@@ -77,8 +77,8 @@ model = ChatOpenAI(
 
 
 # Function to handle streaming output
-def stream_output(chunk):
-    content = chunk.content
+
+def stream_output(content):
     if content is not None:
         sys.stdout.write(content)
         sys.stdout.flush()
@@ -138,19 +138,24 @@ while True:
 
     full_response = ""
     for chunk in model.stream(prompt.messages):
-        content = stream_output(chunk)
+        content = chunk.content
+
         if content is not None:
+            if content == '\n' and full_response[-2:] == '\n\n':
+                continue
+            stream_output(content)
             full_response += content
             # print(content, end='', flush=True)
 
-    print()  # New line after full response
+    if full_response[-1]!='\n':
+        print()  # New line after full response
     # Print AI's response
     # print(f"{ai_name}: {full_response}")
 
     # full_response = sanitize_for_yaml(full_response)
 
     full_response = (
-        full_response.replace("\n", "").replace(f"{{ ai_name }}:", "").strip()
+        full_response.replace("\n", "\\n").replace(f"{{ ai_name }}:", "").strip()
     )
     # Update chat history
     chat_history.append({"role": "user", "content": f"{username}: {user_query}"})
