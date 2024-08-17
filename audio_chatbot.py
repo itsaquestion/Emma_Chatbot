@@ -64,7 +64,7 @@ VOICE = "zh-CN-XiaoxiaoNeural"
 # VOICE = "en-US-AriaNeural"
 
 
-async def text_to_speech_stream(text):
+async def ms_tts_stream(text):
     communicate = edge_tts.Communicate(text, VOICE)
     audio_data = b""
     async for chunk in communicate.stream():
@@ -96,7 +96,7 @@ async def on_message(message: cl.Message):
     answer_message = await res.send()
 
     # TTS
-    audio_data = await text_to_speech_stream(full_response)
+    audio_data = await ms_tts_stream(full_response)
 
     # 添加音频控件并自动播放语音
     output_audio_el = cl.Audio(
