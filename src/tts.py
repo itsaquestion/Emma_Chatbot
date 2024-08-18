@@ -4,13 +4,13 @@ import aiohttp
 
 
 
-VOICE = "zh-CN-XiaoxiaoNeural"
+#VOICE = "zh-CN-XiaoxiaoNeural"
 
-# VOICE = "en-US-AriaNeural"
+VOICE = "en-US-AriaNeural"
 
 
 async def ms_tts_stream(text):
-    communicate = edge_tts.Communicate(text, VOICE)
+    communicate = edge_tts.Communicate(text, VOICE, rate="+10%")
     audio_data = b""
     async for chunk in communicate.stream():
         if chunk["type"] == "audio":

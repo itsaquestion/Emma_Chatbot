@@ -18,6 +18,8 @@ from src.GrammarChecker import GrammarChecker
 
 import os
 
+from src import tts
+
 def setup_runnable():
     with open("prompts/teacher_system.txt", "r") as f:
         text = f.read()
@@ -97,7 +99,7 @@ async def on_message(message: cl.Message):
     if len(memory.chat_memory.messages)>0:
         reply = memory.chat_memory.messages[-1].content
         
-        msg_for_gc = textwrap.dedent(f"Teacher: {reply[:250]} \n...\n {reply[-250:]} \nUser: {message.content}")
+        msg_for_gc = textwrap.dedent(f"Teacher: {reply} \nUser: {message.content}")
     
     else:
         msg_for_gc = f"""User: {message.content}
@@ -110,9 +112,11 @@ async def on_message(message: cl.Message):
         check_result: str = await gc.grammar_check(msg_for_gc)
 
     # check_result = '\n'.join(["> " + x for x in check_result.split('\n')])
-    print(check_result)
-    print(get_final_assessment(check_result))
+    #print(check_result)
+    #print(get_final_assessment(check_result))
 
+    full_response = ""
+    
     if check_result != "" and get_final_assessment(check_result).lower() != "yes":
         await cl.Message(content="**[grammar check]**\n" + check_result).send()
     else:
@@ -125,11 +129,29 @@ async def on_message(message: cl.Message):
             config=RunnableConfig(callbacks=[cl.LangchainCallbackHandler()]),
         ):
             await res.stream_token(chunk)
+            full_response += chunk
 
         await res.send()
     
         memory.chat_memory.add_user_message(message.content)
         memory.chat_memory.add_ai_message(res.content)
         
+
+        # 使用edge-tts
+        audio_data = await tts.ms_tts_stream(full_response)
+
+        # 使用gpt-sovits
+        #audio_data = await tts.gpt_sovits_tts_stream(full_response)
+
+        # 添加音频控件并自动播放语音
+        output_audio_el = cl.Audio(
+            name="",
+            auto_play=True,
+            # mime=audio_mime_type,
+            content=audio_data,
+        )
+
+        res.elements = [output_audio_el]
+        await res.update()
         # print(memory.chat_memory.messages)
 
