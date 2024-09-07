@@ -12,7 +12,7 @@ from langchain.memory import ConversationBufferMemory, ConversationBufferWindowM
 
 import chainlit as cl
 
-from src.utils import extract_final_score, xml_to_friendly_string,extract_exemplar_paragraph
+from src.utils import extract_final_score, xml_to_friendly_string,extract_idiomatic_rewrite
 
 from src.GrammarChecker2 import GrammarChecker
 
@@ -127,7 +127,7 @@ async def on_message(message: cl.Message):
     if check_result != "" and extract_final_score(check_result.strip()) < 4:
         await cl.Message(content=xml_to_friendly_string(check_result)).send()
     else:
-        await cl.Message(content="**exemplar paragraph**: " + extract_exemplar_paragraph(check_result)).send()
+        await cl.Message(content="[**idiomatic rewrite**]: " + extract_idiomatic_rewrite(check_result)).send()
         runnable: Runnable = cl.user_session.get("runnable")  # type: ignore
 
         res = cl.Message(content="")

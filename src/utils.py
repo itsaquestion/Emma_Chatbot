@@ -61,7 +61,7 @@ def extract_final_score(xml_string):
     # Return None if any error occurs or if the score is not found
     return None
 
-def extract_exemplar_paragraph(xml_string):
+def extract_idiomatic_rewrite(xml_string):
     try:
         # Parse the XML string
         root = ET.fromstring(xml_string)
@@ -71,7 +71,7 @@ def extract_exemplar_paragraph(xml_string):
         
         if overall_assessment is not None:
             # Find the score element within overall_assessment
-            score_element = overall_assessment.find('exemplar_paragraph')
+            score_element = overall_assessment.find('idiomatic_rewrite')
             
             if score_element is not None:
                 # Extract the score value and convert it to an integer
@@ -88,17 +88,17 @@ def extract_exemplar_paragraph(xml_string):
 def xml_to_friendly_string(xml_string):
     def process_element(element, depth=0):
         result = []
-        indent = "  " * depth
+        indent = "" * depth
         tag = element.tag
         
         # Check if this is a leaf node (has no child elements)
         if len(element) == 0:
             # If it's a leaf node, put content on the same line
             content = element.text.strip() if element.text else ""
-            result.append(f"{indent}**{tag}**: {content}")
+            result.append(f"{indent}[**{tag}**]: {content}")
         else:
             # If it's not a leaf node, keep the original format
-            result.append(f"{indent}**{tag}**:")
+            result.append(f"{indent}[**{tag}**]: ")
             if element.text and element.text.strip():
                 result.append(f"{indent}  {element.text.strip()}")
             
