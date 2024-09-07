@@ -25,3 +25,10 @@ def get_final_assessment(text) -> str:
 
     return result
 
+def format_conversation_history(history):
+    formatted_text = ""
+    for entry in history:
+        role = entry.get("role", "Unknown")
+        content = entry.get("content", "")
+        formatted_text += f"{role.capitalize()}:\n{content}\n\n"
+    return formatted_text.strip()

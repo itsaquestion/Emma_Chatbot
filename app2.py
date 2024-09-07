@@ -36,7 +36,7 @@ from src.DialogueAgent import DialogueAgent
 #     else:
 #         return None
 
-from src.GrammarChecker2 import GrammarChecker
+from src.GrammarChecker import GrammarChecker
 
 def make_teacher():
     sys_msg = """You are a English Teacher. You are talking to a student who is learning English.
@@ -45,7 +45,7 @@ def make_teacher():
 
     model = ChatOpenAI(
         base_url=os.environ.get("CHAT_BASE_URL"),
-        api_key=os.environ.get("CHAT_API_KEY"),
+        api_key=os.environ.get("CHAT_API_KEY"), # type: ignore
         model=os.environ.get("CHAT_MODEL") or "gpt-4o-mini",
         streaming=True,
         max_retries=512,
@@ -68,10 +68,8 @@ async def on_chat_start():
     
     cl.user_session.set("chat_history", chat_history)
     cl.user_session.set("teacher", teacher)
-    cl.user_session.set("gc", gc)
+    #cl.user_session.set("gc", gc)
     
-
-
 # @cl.on_chat_resume
 # async def on_chat_resume(thread: ThreadDict):
 #     memory = ConversationBufferMemory(return_messages=True)
@@ -95,46 +93,15 @@ async def on_chat_start():
 
 @cl.on_message
 async def on_message(message: cl.Message):
-    gc: GrammarChecker = cl.user_session.get("gc")  # type: ignore
-    teacher: DialogueAgent = cl.user_session.get("teacher") 
-    chat_history: List = cl.user_session.get("chat_history") 
-    # memory: ConversationBufferMemory = cl.user_session.get("memory")  # type: ignore
 
-    # if len(memory.chat_memory.messages) > 0:
-    #     reply = memory.chat_memory.messages[-1].content
+    teacher: DialogueAgent = cl.user_session.get("teacher")  # type: ignore
+    chat_history: List = cl.user_session.get("chat_history")  # type: ignore
 
-    #     msg_for_gc = textwrap.dedent(
-    #         f"Teacher: {reply[:250]} \n...\n {reply[-250:]} \nUser: {message.content}"
-    #     )
-    #print(message.content)
-    
-    #print(str(chat_history[-2:]))
     
     temp_prompt = teacher.make_chat_prompt(message.content, chat_history)
     temp_prompt.truncate(truncation_step=2)
     print(temp_prompt.string)
     
-    check_result = await gc.grammar_check(message.content)
-    #print(check_result)
-    
-    # else:
-    #     msg_for_gc = f"""User: {message.content}
-    #     """
-
-    # check_result = ""
-    # if len(message.content) < 500:
-    #     # print("[Do check]")
-    #     # check_result: str = await gc.grammar_check(message.content)
-    #     check_result: str = await gc.grammar_check(msg_for_gc)
-
-    # # check_result = '\n'.join(["> " + x for x in check_result.split('\n')])
-    # print(check_result)
-    # print(get_final_assessment(check_result))
-
-    # if check_result != "" and get_final_assessment(check_result).lower() != "yes":
-    #     await cl.Message(content="**[grammar check]**\n" + check_result).send()
-    # else:
-    # type: ignore
 
     res = cl.Message(content="")
 

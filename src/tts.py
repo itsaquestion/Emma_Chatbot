@@ -4,9 +4,9 @@ import aiohttp
 
 
 
-#VOICE = "zh-CN-XiaoxiaoNeural"
+VOICE = "zh-CN-XiaoxiaoNeural"
 
-VOICE = "en-US-AriaNeural"
+#VOICE = "en-US-AriaNeural"
 
 
 async def ms_tts_stream(text):
