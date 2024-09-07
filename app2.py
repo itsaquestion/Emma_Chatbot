@@ -18,11 +18,13 @@ import chainlit as cl
 
 from src.utils import get_final_assessment, extract_letters
 
-from src.GrammarChecker import GrammarChecker
+from src.GrammarChecker2 import GrammarChecker
 
 import os
 
 from src.DialogueAgent import DialogueAgent
+
+from src import tts
 
 # @cl.password_auth_callback
 # def auth_callback(username: str, password: str):
@@ -36,7 +38,7 @@ from src.DialogueAgent import DialogueAgent
 #     else:
 #         return None
 
-from src.GrammarChecker import GrammarChecker
+
 
 def make_teacher():
     sys_msg = """You are a English Teacher. You are talking to a student who is learning English.
@@ -104,9 +106,28 @@ async def on_message(message: cl.Message):
 
     res = cl.Message(content="")
 
+    full_response = ''
     async for chunk in teacher.astream_chat(message.content, chat_history):
         await res.stream_token(chunk)
+        full_response += chunk
 
     await res.send()
+    
+    # 使用edge-tts
+    audio_data = await tts.ms_tts_stream(full_response)
+
+    # 使用gpt-sovits
+    # audio_data = await tts.gpt_sovits_tts_stream(full_response)
+
+    # 添加音频控件并自动播放语音
+    output_audio_el = cl.Audio(
+        name="",
+        auto_play=True,
+        # mime=audio_mime_type,
+        content=audio_data,
+    )
+
+    res.elements = [output_audio_el]
+    await res.update()
 
     # print(memory.chat_memory.messages)
