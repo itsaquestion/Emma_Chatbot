@@ -8,23 +8,23 @@ def extract_letters(string):
     return "".join(letters)
 
 
-def get_final_assessment(text) -> str:
-    """
-    从多行字符串中提取Final Assessment的结果。
+# def get_final_assessment(text) -> str:
+#     """
+#     从多行字符串中提取Final Assessment的结果。
 
-    参数:
-    text (str) - 包含Final Assessment信息的多行字符串
+#     参数:
+#     text (str) - 包含Final Assessment信息的多行字符串
 
-    返回:
-    str - "Yes"或"No"
-    """
+#     返回:
+#     str - "Yes"或"No"
+#     """
     
-    result = text.split(":")
+#     result = text.split(":")
     
-    if len(result) > 0:
-        result = result[-1].strip()
+#     if len(result) > 0:
+#         result = result[-1].strip()
 
-    return result
+#     return result
 
 def format_conversation_history(history):
     formatted_text = ""
@@ -55,6 +55,30 @@ def extract_final_score(xml_string):
         print("Error: Invalid XML format")
     except ValueError:
         print("Error: Score is not a valid integer")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+    
+    # Return None if any error occurs or if the score is not found
+    return None
+
+def extract_exemplar_paragraph(xml_string):
+    try:
+        # Parse the XML string
+        root = ET.fromstring(xml_string)
+        
+        # Find the overall_assessment element
+        overall_assessment = root.find('.//overall_assessment')
+        
+        if overall_assessment is not None:
+            # Find the score element within overall_assessment
+            score_element = overall_assessment.find('exemplar_paragraph')
+            
+            if score_element is not None:
+                # Extract the score value and convert it to an integer
+                return score_element.text
+                
+    except ET.ParseError:
+        print("Error: Invalid XML format")
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
     

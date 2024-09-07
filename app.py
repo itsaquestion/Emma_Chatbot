@@ -7,12 +7,12 @@ from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.schema.output_parser import StrOutputParser
 from langchain.schema.runnable import Runnable, RunnablePassthrough, RunnableLambda
 from langchain.schema.runnable.config import RunnableConfig
-from langchain.memory import ConversationBufferMemory
+from langchain.memory import ConversationBufferMemory, ConversationBufferWindowMemory
 
 
 import chainlit as cl
 
-from src.utils import extract_final_score, xml_to_friendly_string
+from src.utils import extract_final_score, xml_to_friendly_string,extract_exemplar_paragraph
 
 from src.GrammarChecker2 import GrammarChecker
 
@@ -25,7 +25,11 @@ def setup_runnable():
     with open("prompts/teacher_system.txt", "r") as f:
         text = f.read()
 
-    memory: ConversationBufferMemory = cl.user_session.get("memory")  # type: ignore
+    memory = cl.user_session.get("memory")
+    if not memory:
+        memory = ConversationBufferWindowMemory(k=10)  # 如果内存不存在，创建一个新的
+        cl.user_session.set("memory", memory)
+        
     model = ChatOpenAI(
         base_url=os.environ.get("CHAT_BASE_URL"),
         api_key=os.environ.get("CHAT_API_KEY"),
@@ -92,6 +96,9 @@ async def on_message(message: cl.Message):
     gc: GrammarChecker = cl.user_session.get("gc")  # type: ignore
     memory: ConversationBufferMemory = cl.user_session.get("memory")  # type: ignore
 
+    # =================================
+    # 组合最后一条老师信息和学生的信息，给gc进行检查
+    # =================================
     if len(memory.chat_memory.messages) > 0:
         reply = memory.chat_memory.messages[-1].content
 
@@ -100,7 +107,6 @@ async def on_message(message: cl.Message):
     else:
         msg_for_gc = f"""User: {message.content}
         """
-
     check_result = ""
     if len(message.content) < 500:
         # print("[Do check]")
@@ -115,9 +121,13 @@ async def on_message(message: cl.Message):
 
     # print(check_result)
 
+    # =================================
+    # 如果分数小于4，要求重写。否则进行正常对话
+    # =================================
     if check_result != "" and extract_final_score(check_result.strip()) < 4:
         await cl.Message(content=xml_to_friendly_string(check_result)).send()
     else:
+        await cl.Message(content="**exemplar paragraph**: " + extract_exemplar_paragraph(check_result)).send()
         runnable: Runnable = cl.user_session.get("runnable")  # type: ignore
 
         res = cl.Message(content="")
@@ -134,6 +144,10 @@ async def on_message(message: cl.Message):
         memory.chat_memory.add_user_message(message.content)
         memory.chat_memory.add_ai_message(res.content)
 
+        # =================================
+        # TTS并显示控件
+        # =================================
+        
         # 使用edge-tts
         audio_data = await tts.ms_tts_stream(full_response)
 

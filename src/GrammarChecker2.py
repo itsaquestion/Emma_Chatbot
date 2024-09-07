@@ -33,6 +33,9 @@ class GrammarChecker:
 
         prompt = self.prompt + textwrap.dedent(f"\nChat History:\n{msg}")
         
+        with open("grammar_checker_logs.txt",'w') as f:
+            f.write(prompt)
+            
         # print(prompt)
         async for chunk in self.llm.astream(prompt):
             await current_step.stream_token(chunk.content)
