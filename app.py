@@ -12,9 +12,9 @@ from langchain.memory import ConversationBufferMemory
 
 import chainlit as cl
 
-from src.utils import get_final_assessment
+from src.utils import extract_final_score, xml_to_friendly_string
 
-from src.GrammarChecker import GrammarChecker
+from src.GrammarChecker2 import GrammarChecker
 
 import os
 
@@ -113,8 +113,10 @@ async def on_message(message: cl.Message):
 
     full_response = ""
 
-    if check_result != "" and get_final_assessment(check_result).lower() != "yes":
-        await cl.Message(content="**[grammar check]**\n" + check_result).send()
+    # print(check_result)
+
+    if check_result != "" and extract_final_score(check_result.strip()) < 4:
+        await cl.Message(content=xml_to_friendly_string(check_result)).send()
     else:
         runnable: Runnable = cl.user_session.get("runnable")  # type: ignore
 

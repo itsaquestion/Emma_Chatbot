@@ -68,7 +68,7 @@ async def on_chat_start():
     
     cl.user_session.set("chat_history", chat_history)
     cl.user_session.set("teacher", teacher)
-    #cl.user_session.set("gc", gc)
+    cl.user_session.set("gc", gc)
     
 # @cl.on_chat_resume
 # async def on_chat_resume(thread: ThreadDict):
@@ -101,7 +101,6 @@ async def on_message(message: cl.Message):
     temp_prompt = teacher.make_chat_prompt(message.content, chat_history)
     temp_prompt.truncate(truncation_step=2)
     print(temp_prompt.string)
-    
 
     res = cl.Message(content="")
 
