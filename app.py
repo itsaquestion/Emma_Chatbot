@@ -12,7 +12,11 @@ from langchain.memory import ConversationBufferMemory, ConversationBufferWindowM
 
 import chainlit as cl
 
-from src.utils import extract_final_score, xml_to_friendly_string,extract_idiomatic_rewrite
+from src.utils import (
+    extract_final_score,
+    xml_to_friendly_string,
+    extract_idiomatic_rewrite,
+)
 
 from src.GrammarChecker2 import GrammarChecker
 
@@ -29,7 +33,7 @@ def setup_runnable():
     if not memory:
         memory = ConversationBufferWindowMemory(k=10)  # 如果内存不存在，创建一个新的
         cl.user_session.set("memory", memory)
-        
+
     model = ChatOpenAI(
         base_url=os.environ.get("CHAT_BASE_URL"),
         api_key=os.environ.get("CHAT_API_KEY"),
@@ -127,7 +131,10 @@ async def on_message(message: cl.Message):
     if check_result != "" and extract_final_score(check_result.strip()) < 4:
         await cl.Message(content=xml_to_friendly_string(check_result)).send()
     else:
-        await cl.Message(content="[**idiomatic rewrite**]: " + extract_idiomatic_rewrite(check_result)).send()
+        await cl.Message(
+            content="[**idiomatic rewrite**]: "
+            + extract_idiomatic_rewrite(check_result)
+        ).send()
         runnable: Runnable = cl.user_session.get("runnable")  # type: ignore
 
         res = cl.Message(content="")
@@ -147,7 +154,7 @@ async def on_message(message: cl.Message):
         # =================================
         # TTS并显示控件
         # =================================
-        
+
         # 使用edge-tts
         audio_data = await tts.ms_tts_stream(full_response)
 

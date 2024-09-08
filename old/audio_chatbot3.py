@@ -91,12 +91,11 @@ async def on_message(message: cl.Message):
     template_data = {
         "username": username,
         "ai_name": ai_name,
-        "user_query": message.content.replace('\n',''),
+        "user_query": message.content.replace("\n", ""),
         "chat_history": chat_history[-10:],
     }
 
     prompt = Prompt(raw_template=raw_template, template_data=template_data)
-
 
     # ======================================
     # LLM
@@ -124,7 +123,7 @@ async def on_message(message: cl.Message):
 
     cl.user_session.set("chat_history", chat_history)
 
-    with open('chat_history.txt','w') as f:
+    with open("chat_history.txt", "w") as f:
         f.write(utils.format_conversation_history(chat_history))
     # print(prompt.messages)
 
@@ -135,7 +134,7 @@ async def on_message(message: cl.Message):
     # ======================================
 
     if False:
-        full_response = full_response.replace("*",'')
+        full_response = full_response.replace("*", "")
 
         # 使用edge-tts
         audio_data = await tts.ms_tts_stream(full_response)

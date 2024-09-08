@@ -5,7 +5,6 @@ import sys
 from prompt_toolkit import PromptSession, print_formatted_text
 from prompt_toolkit.styles import Style
 from prompt_toolkit.formatted_text import HTML
-
 # Define the raw template
 
 system_prompt_template = """
@@ -40,8 +39,9 @@ system_prompt_template = """
 """
 
 
-
-raw_template = system_prompt_template + """
+raw_template = (
+    system_prompt_template
+    + """
 
 {% for message in chat_history %}
 - name: chat_message_{{ loop.index }}
@@ -60,6 +60,7 @@ raw_template = system_prompt_template + """
   content: |
     Respond directly without prefixing with "{{ ai_name }}:". Begin your response immediately with the content. Don not use markdown. No quote marks. 
     Act as {{ai_name}}. {{ ai_name }}:"""
+)
 
 # Initialize chat history and other variables
 chat_history = []
@@ -68,7 +69,7 @@ ai_name = "Emma"
 
 # Initialize the model
 model = ChatOpenAI(
-    model=os.environ['CHAT_MODEL'] or "gpt-4o-mini",
+    model=os.environ["CHAT_MODEL"] or "gpt-4o-mini",
     temperature=0.9,
     api_key=os.environ["CHAT_API_KEY"],
     base_url=os.environ["CHAT_BASE_URL"],
@@ -77,6 +78,7 @@ model = ChatOpenAI(
 
 
 # Function to handle streaming output
+
 
 def stream_output(content):
     if content is not None:
@@ -141,13 +143,13 @@ while True:
         content = chunk.content
 
         if content is not None:
-            if content == '\n' and full_response[-2:] == '\n\n':
+            if content == "\n" and full_response[-2:] == "\n\n":
                 continue
             stream_output(content)
             full_response += content
             # print(content, end='', flush=True)
 
-    if full_response[-1]!='\n':
+    if full_response[-1] != "\n":
         print()  # New line after full response
     # Print AI's response
     # print(f"{ai_name}: {full_response}")
