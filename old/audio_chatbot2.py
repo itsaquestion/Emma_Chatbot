@@ -9,10 +9,8 @@ from src import tts
 import os
 
 model = ChatOpenAI(
-    #base_url=os.environ.get("GC_BASE_URL"),
-    #api_key=os.environ.get("GC_API_KEY"),
-    base_url="https://hk.imtass.me/v1",
-    api_key="d443a87dc4ecc16a3523a41d18fe1115",
+    base_url=os.environ.get("TABBY_BASE_URL"),
+    api_key=os.environ.get("TABBY_API_KEY"),
     model="nousresearch/hermes-3-llama-3.1-405b",
     streaming=True,
     max_retries=512,
