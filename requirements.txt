@@ -4,3 +4,5 @@ duckduckgo_search>=5.3.0b4
 langchain-openai
 langchain
 edge-tts
+prompt_poet
+prompt_toolkit

@@ -68,10 +68,10 @@ ai_name = "Emma"
 
 # Initialize the model
 model = ChatOpenAI(
-    model="gpt-4o-mini",
+    model=os.environ['CHAT_MODEL'] or "gpt-4o-mini",
     temperature=0.9,
-    api_key=os.environ["TABBY_API_KEY"],
-    base_url=os.environ["TABBY_BASE_URL"],
+    api_key=os.environ["CHAT_API_KEY"],
+    base_url=os.environ["CHAT_BASE_URL"],
     streaming=True,
 )
 
