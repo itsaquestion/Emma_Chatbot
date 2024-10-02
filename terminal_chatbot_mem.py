@@ -108,7 +108,8 @@ raw_template = (
   role: assistant
   content: |
     Respond directly without prefixing with "{{ ai_name }}:". Begin your response immediately with the content. Don not use markdown. No quote marks.  
-    Act as {{ ai_name }}. {{ai_name}}:"""
+    Act as {{ ai_name }}. {{ai_name}}: 
+"""
 )
 
 # Initialize chat history and other variables
