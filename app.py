@@ -151,24 +151,27 @@ async def on_message(message: cl.Message):
         memory.chat_memory.add_user_message(message.content)
         memory.chat_memory.add_ai_message(res.content)
 
-        # =================================
-        # TTS并显示控件
-        # =================================
-
-        # 使用edge-tts
-        audio_data = await tts.ms_tts_stream(full_response)
-
-        # 使用gpt-sovits
-        # audio_data = await tts.gpt_sovits_tts_stream(full_response)
-
-        # 添加音频控件并自动播放语音
-        output_audio_el = cl.Audio(
-            name="",
-            auto_play=True,
-            # mime=audio_mime_type,
-            content=audio_data,
-        )
-
-        res.elements = [output_audio_el]
-        await res.update()
         # print(memory.chat_memory.messages)
+        
+        # =================================
+        # TTS并显示控件 
+        # =================================
+
+        if False:
+        # 使用edge-tts
+            audio_data = await tts.ms_tts_stream(full_response)
+
+            # 使用gpt-sovits
+            # audio_data = await tts.gpt_sovits_tts_stream(full_response)
+
+            # 添加音频控件并自动播放语音
+            output_audio_el = cl.Audio(
+                name="",
+                auto_play=True,
+                # mime=audio_mime_type,
+                content=audio_data,
+            )
+
+            res.elements = [output_audio_el]
+            await res.update()
+

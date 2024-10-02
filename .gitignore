@@ -1,4 +1,6 @@
-grammar_checker_logs.txt
+logs/
+memory_storage/
+
 chat_history.txt
 .env
 .files/

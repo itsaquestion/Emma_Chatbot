@@ -6,3 +6,5 @@ langchain
 edge-tts
 prompt_poet
 prompt_toolkit
+sentence-transformers
+faiss-gpu

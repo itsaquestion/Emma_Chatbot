@@ -33,7 +33,7 @@ class GrammarChecker:
 
         prompt = self.prompt + textwrap.dedent(f"\nChat History:\n{msg}")
         
-        with open("grammar_checker_logs.txt",'w') as f:
+        with open("logs/grammar_checker_logs.txt",'w') as f:
             f.write(prompt)
             
         # print(prompt)
